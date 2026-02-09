@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pembayaran Saya</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Tagihan Servis Anda</h2>
+        <div class="info-box" style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bae6fd;">
+            <p style="color: #0369a1; font-weight: 600;">Rekening Transfer: BCA 1234567890 (A.N Bengkel Sam)</p>
+            <p style="font-size: 12px; margin-top:5px;">Silakan transfer sesuai nominal, lalu klik tombol "Konfirmasi Bayar".</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Kendaraan</th>
+                    <th>Status Servis</th>
+                    <th>Total Tagihan</th>
+                    <th>Status Pembayaran</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="list-tagihan"></tbody>
+        </table>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const user = checkAuth(['pelanggan']); 
+
+        async function loadData() {
+            const res = await sendData({ action: "getBookings" });
+            
+            // Filter: Punya user ini DAN (Sudah ada tagihan ATAU sedang diverifikasi)
+            const myBills = res.filter(r => 
+                r.email === user.email && 
+                r.status === 'Selesai' && 
+                (r.bayar === 'Tagihan' || r.bayar === 'Verifikasi' || r.bayar === 'Belum')
+            );
+            
+            const tbody = document.getElementById("list-tagihan");
+            
+            if(myBills.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center">Tidak ada tagihan aktif.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = myBills.map(d => {
+                let statusBadge = `<span style="color:orange; font-weight:bold">${d.bayar}</span>`;
+                let btnAction = "";
+                let nominal = d.biaya == 0 ? "Menunggu Kasir" : rupiah(d.biaya);
+
+                if (d.bayar === 'Belum') {
+                    statusBadge = `<span style="color:red">Menunggu Hitungan Kasir</span>`;
+                    btnAction = `<button disabled style="background:#ccc; cursor:not-allowed">Belum Ada Tagihan</button>`;
+                } else if (d.bayar === 'Tagihan') {
+                    statusBadge = `<span style="color:#d97706; font-weight:bold">Belum Dibayar</span>`;
+                    btnAction = `<button onclick="bayarSekarang('${d.id}')">Konfirmasi Sudah Bayar</button>`;
+                } else if (d.bayar === 'Verifikasi') {
+                    statusBadge = `<span style="color:#2563eb; font-weight:bold">Sedang Diverifikasi</span>`;
+                    btnAction = `<button disabled style="background:#ccc; cursor:not-allowed">Menunggu Admin</button>`;
+                }
+
+                return `
+                <tr>
+                    <td>${d.kendaraan}<br><small>${d.servis}</small></td>
+                    <td>${d.status}</td>
+                    <td style="font-size: 1.1em; font-weight: bold;">${nominal}</td>
+                    <td>${statusBadge}</td>
+                    <td>${btnAction}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function bayarSekarang(id) {
+            if(confirm("Apakah Anda yakin sudah melakukan transfer?")) {
+                await sendData({ action: "konfirmasiBayar", id: id });
+                alert("Konfirmasi terkirim! Tunggu verifikasi kasir.");
+                loadData();
+            }
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>

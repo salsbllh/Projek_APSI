@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head><title>Kasir</title><link rel="stylesheet" href="style.css"></head>
+<head><title>Kasir Bengkel</title><link rel="stylesheet" href="style.css"></head>
 <body>
     <div class="navbar" id="navbar"></div>
     <div class="container">
-        <h2>Kasir: Pembayaran</h2>
-        <p>List kendaraan yang sudah selesai servis tapi belum bayar.</p>
+        <h2>Kasir & Pembayaran</h2>
+        
+        <h3 style="margin-top: 20px;">1. Input Tagihan (Kirim ke Pelanggan)</h3>
+        <p>Kendaraan selesai servis, masukkan biaya agar pelanggan bisa bayar.</p>
         <table>
-            <thead><tr><th>ID</th><th>Pelanggan</th><th>Kendaraan</th><th>Input Biaya</th><th>Aksi</th></tr></thead>
-            <tbody id="list-bayar"></tbody>
+            <thead><tr><th>ID</th><th>Plg</th><th>Kendaraan</th><th>Input Biaya</th><th>Aksi</th></tr></thead>
+            <tbody id="list-input-tagihan"></tbody>
+        </table>
+
+        <h3 style="margin-top: 40px; border-top: 2px dashed #ccc; padding-top: 20px;">2. Verifikasi Pembayaran Masuk</h3>
+        <p>Pelanggan sudah konfirmasi bayar, cek mutasi lalu sahkan.</p>
+        <table>
+            <thead><tr><th>ID</th><th>Plg</th><th>Kendaraan</th><th>Total Tagihan</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="list-verifikasi"></tbody>
         </table>
     </div>
     <script src="script.js"></script>
@@ -17,30 +26,63 @@
 
         async function loadData() {
             const res = await sendData({ action: "getBookings" });
-            // Tampilkan yang status Selesai TAPI Belum Bayar
-            const unpaid = res.filter(r => r.status === 'Selesai' && r.bayar === 'Belum');
             
-            document.getElementById("list-bayar").innerHTML = unpaid.map(d => `
+            // 1. List yang butuh Input Biaya (Status Selesai, Bayar Belum)
+            const needBill = res.filter(r => r.status === 'Selesai' && r.bayar === 'Belum');
+            
+            // 2. List yang butuh Verifikasi (Status Bayar = Verifikasi) atau Masih Tagihan (bisa langsung dilunaskan manual)
+            const needVerify = res.filter(r => r.bayar === 'Verifikasi' || r.bayar === 'Tagihan');
+
+            // Render Tabel 1: Input Tagihan
+            document.getElementById("list-input-tagihan").innerHTML = needBill.map(d => `
                 <tr>
                     <td>${d.id}</td>
                     <td>${d.email}</td>
-                    <td>${d.kendaraan} <br> (${d.servis})</td>
-                    <td><input type="number" id="biaya-${d.id}" placeholder="Masukkan Total"></td>
+                    <td>${d.kendaraan} (${d.servis})</td>
+                    <td><input type="number" id="biaya-${d.id}" placeholder="Rp..."></td>
                     <td>
-                        <button onclick="bayar('${d.id}')">Proses Bayar</button>
+                        <button onclick="kirimTagihan('${d.id}')">Kirim Tagihan</button>
                     </td>
                 </tr>
             `).join('');
+
+            // Render Tabel 2: Verifikasi
+            document.getElementById("list-verifikasi").innerHTML = needVerify.map(d => {
+                let statusLabel = d.bayar === 'Verifikasi' 
+                    ? `<span class="badge" style="background:#dbeafe; color:#1e40af">Menunggu Verifikasi</span>` 
+                    : `<span class="badge" style="background:#ffedd5; color:#9a3412">Menunggu Pelanggan</span>`;
+                
+                return `
+                <tr>
+                    <td>${d.id}</td>
+                    <td>${d.email}</td>
+                    <td>${d.kendaraan}</td>
+                    <td><b>${rupiah(d.biaya)}</b></td>
+                    <td>${statusLabel}</td>
+                    <td>
+                        <button onclick="setLunas('${d.id}')" class="btn-success">Terima / Lunas</button>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        async function bayar(id) {
+        async function kirimTagihan(id) {
             const biaya = document.getElementById(`biaya-${id}`).value;
             if(!biaya) return alert("Masukkan nominal biaya!");
 
-            await sendData({ action: "updateBayar", id: id, biaya: biaya });
-            alert("Pembayaran Berhasil Disimpan!");
-            loadData();
+            if(confirm("Kirim tagihan sebesar " + rupiah(biaya) + " ke pelanggan?")) {
+                await sendData({ action: "simpanTagihan", id: id, biaya: biaya });
+                loadData();
+            }
         }
+
+        async function setLunas(id) {
+            if(confirm("Uang sudah diterima? Tandai Lunas?")) {
+                await sendData({ action: "setLunas", id: id });
+                loadData();
+            }
+        }
+        
         loadData();
     </script>
 </body>

@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyA_0ABwSIBW4y8ZGDXvC1E6Ja7Cpr5noueb5gJWSxln-7Nu9iFE16uUczli6Gg4ejQlw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwJ2WpRGqrxbuAQ1Yz9VDHvvv-q3AF4joSYQz2JRivZdeGX9miRDws1rWdJGwbr9LnkDw/exec";
 
 // --- FUNGSI UTAMA FETCH ---
 async function sendData(data) {
@@ -43,6 +43,9 @@ function logout() {
 const rupiah = (num) => new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(num);
 
 // --- RENDER NAVBAR (Otomatis berdasarkan Role) ---
+// ... kode fetch di atas tetap sama ...
+
+// --- RENDER NAVBAR (Update Bagian Ini) ---
 function renderNavbar() {
     const user = JSON.parse(localStorage.getItem("user"));
     const nav = document.getElementById("navbar");
@@ -52,6 +55,8 @@ function renderNavbar() {
     
     if(user.role === 'pelanggan') {
         menu += `<a href="booking.html">Booking Baru</a>`;
+        // Tambahan Menu Baru
+        menu += `<a href="bayar_pelanggan.html">Bayar Tagihan</a>`;
     }
     if(user.role === 'admin') {
         menu += `<a href="kelola_booking.html">Kelola Booking</a>`;
@@ -64,8 +69,10 @@ function renderNavbar() {
         menu += `<a href="pembayaran.html">Kasir</a>`;
     }
 
-    menu += `<a onclick="logout()" style="color:red">Logout (${user.nama})</a>`;
+    menu += `<a onclick="logout()" style="color:red; cursor:pointer;">Logout (${user.nama})</a>`;
     nav.innerHTML = menu;
 }
+
+document.addEventListener("DOMContentLoaded", renderNavbar);
 
 document.addEventListener("DOMContentLoaded", renderNavbar);
