@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><title>Tugas Mekanik</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Mekanik: Daftar Pekerjaan</h2>
+        <table>
+            <thead><tr><th>Kendaraan</th><th>Servis</th><th>Status Saat Ini</th><th>Aksi</th></tr></thead>
+            <tbody id="list-servis"></tbody>
+        </table>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        checkAuth(['mekanik']); 
+
+        async function loadData() {
+            const res = await sendData({ action: "getBookings" });
+            // Mekanik hanya melihat yang statusnya Menunggu atau Proses
+            const jobs = res.filter(r => r.status === 'Menunggu' || r.status === 'Proses');
+            
+            document.getElementById("list-servis").innerHTML = jobs.map(d => `
+                <tr>
+                    <td>${d.kendaraan}</td>
+                    <td>${d.servis}</td>
+                    <td><b>${d.status}</b></td>
+                    <td>
+                        <button onclick="setStatus('${d.id}', 'Selesai')">Selesaikan</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function setStatus(id, status) {
+            if(confirm("Selesaikan servis ini?")) {
+                await sendData({ action: "updateStatus", id: id, status: status });
+                loadData();
+            }
+        }
+        loadData();
+    </script>
+</body>
+</html>

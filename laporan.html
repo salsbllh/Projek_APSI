@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Laporan Keuangan</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Laporan Pendapatan</h2>
+        <div style="margin-bottom: 20px; padding: 10px; background: #e2e6ea;">
+            <h3>Total Pendapatan: <span id="total-uang">Rp 0</span></h3>
+        </div>
+        <table>
+            <thead><tr><th>Tgl</th><th>ID</th><th>Kendaraan</th><th>Nominal</th></tr></thead>
+            <tbody id="list-laporan"></tbody>
+        </table>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        checkAuth(['admin']); 
+
+        async function loadData() {
+            const res = await sendData({ action: "getBookings" });
+            // Hanya yang sudah Lunas
+            const paid = res.filter(r => r.bayar === 'Lunas');
+            
+            let total = 0;
+            document.getElementById("list-laporan").innerHTML = paid.map(d => {
+                total += parseInt(d.biaya);
+                return `
+                <tr>
+                    <td>${d.tgl.split('T')[0]}</td>
+                    <td>${d.id}</td>
+                    <td>${d.kendaraan}</td>
+                    <td>${rupiah(d.biaya)}</td>
+                </tr>`;
+            }).join('');
+            
+            document.getElementById("total-uang").innerText = rupiah(total);
+        }
+        loadData();
+    </script>
+</body>
+</html>

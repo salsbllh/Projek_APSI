@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2 id="welcome">Selamat Datang</h2>
+        <p style="text-align: center;">Pilih menu di atas sesuai akses Anda.</p>
+        
+        <div id="riwayat-pelanggan" class="hide">
+            <h3>Riwayat Servis Saya</h3>
+            <table>
+                <thead><tr><th>Kendaraan</th><th>Status</th><th>Biaya</th><th>Pembayaran</th></tr></thead>
+                <tbody id="table-riwayat"></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const user = checkAuth(); // Cek login
+        document.getElementById("welcome").innerText = "Halo, " + user.nama;
+
+        if (user.role === 'pelanggan') {
+            document.getElementById("riwayat-pelanggan").classList.remove("hide");
+            loadRiwayat();
+        }
+
+        async function loadRiwayat() {
+            const res = await sendData({ action: "getBookings" });
+            const myData = res.filter(r => r.email === user.email);
+            const tbody = document.getElementById("table-riwayat");
+            
+            tbody.innerHTML = myData.map(d => `
+                <tr>
+                    <td>${d.kendaraan} <br> <small>${d.servis}</small></td>
+                    <td>${d.status}</td>
+                    <td>${rupiah(d.biaya)}</td>
+                    <td>${d.bayar}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

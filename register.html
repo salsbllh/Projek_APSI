@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registrasi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px;">
+        <h2>Registrasi Pelanggan</h2>
+        <input type="text" id="nama" placeholder="Nama Lengkap">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="doRegis()">Daftar</button>
+        <p><a href="login.html">Kembali ke Login</a></p>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        async function doRegis() {
+            const data = {
+                action: "register",
+                nama: document.getElementById("nama").value,
+                email: document.getElementById("email").value,
+                password: document.getElementById("pass").value
+            };
+            const res = await sendData(data);
+            if(res === "Sukses") {
+                alert("Berhasil! Silakan Login");
+                window.location.href = "login.html";
+            }
+        }
+    </script>
+</body>
+</html>

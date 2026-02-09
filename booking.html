@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Booking Servis</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Form Booking Servis</h2>
+        <input type="text" id="kendaraan" placeholder="Nama Kendaraan (Contoh: Vario 150)">
+        <select id="servis">
+            <option>Servis Ringan</option>
+            <option>Ganti Oli</option>
+            <option>Servis Besar</option>
+        </select>
+        <input type="date" id="tgl">
+        <button onclick="submitBooking()">Kirim Booking</button>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const user = checkAuth(['pelanggan']); // Hanya Pelanggan
+
+        async function submitBooking() {
+            const data = {
+                action: "addBooking",
+                email: user.email,
+                kendaraan: document.getElementById("kendaraan").value,
+                servis: document.getElementById("servis").value,
+                tgl: document.getElementById("tgl").value
+            };
+            await sendData(data);
+            alert("Booking Terkirim!");
+            window.location.href = "dashboard.html";
+        }
+    </script>
+</body>
+</html>

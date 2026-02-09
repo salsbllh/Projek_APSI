@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head><title>Kasir</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Kasir: Pembayaran</h2>
+        <p>List kendaraan yang sudah selesai servis tapi belum bayar.</p>
+        <table>
+            <thead><tr><th>ID</th><th>Pelanggan</th><th>Kendaraan</th><th>Input Biaya</th><th>Aksi</th></tr></thead>
+            <tbody id="list-bayar"></tbody>
+        </table>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        checkAuth(['kasir']); 
+
+        async function loadData() {
+            const res = await sendData({ action: "getBookings" });
+            // Tampilkan yang status Selesai TAPI Belum Bayar
+            const unpaid = res.filter(r => r.status === 'Selesai' && r.bayar === 'Belum');
+            
+            document.getElementById("list-bayar").innerHTML = unpaid.map(d => `
+                <tr>
+                    <td>${d.id}</td>
+                    <td>${d.email}</td>
+                    <td>${d.kendaraan} <br> (${d.servis})</td>
+                    <td><input type="number" id="biaya-${d.id}" placeholder="Masukkan Total"></td>
+                    <td>
+                        <button onclick="bayar('${d.id}')">Proses Bayar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function bayar(id) {
+            const biaya = document.getElementById(`biaya-${id}`).value;
+            if(!biaya) return alert("Masukkan nominal biaya!");
+
+            await sendData({ action: "updateBayar", id: id, biaya: biaya });
+            alert("Pembayaran Berhasil Disimpan!");
+            loadData();
+        }
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head><title>Kelola Booking</title><link rel="stylesheet" href="style.css"></head>
+<body>
+    <div class="navbar" id="navbar"></div>
+    <div class="container">
+        <h2>Admin: Kelola Data Booking</h2>
+        <table>
+            <thead><tr><th>ID</th><th>User</th><th>Kendaraan</th><th>Tgl</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="list-booking"></tbody>
+        </table>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        checkAuth(['admin']); // Hanya Admin
+
+        async function loadData() {
+            const res = await sendData({ action: "getBookings" });
+            document.getElementById("list-booking").innerHTML = res.map(d => `
+                <tr>
+                    <td>${d.id}</td>
+                    <td>${d.email}</td>
+                    <td>${d.kendaraan}</td>
+                    <td>${d.tgl.split('T')[0]}</td>
+                    <td>${d.status}</td>
+                    <td>
+                        <button onclick="updateStatus('${d.id}', 'Proses')" style="font-size:10px">Proses</button>
+                        <button onclick="updateStatus('${d.id}', 'Dibatalkan')" class="btn-danger" style="font-size:10px">Batal</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        async function updateStatus(id, status) {
+            await sendData({ action: "updateStatus", id: id, status: status });
+            loadData();
+        }
+        loadData();
+    </script>
+</body>
+</html>

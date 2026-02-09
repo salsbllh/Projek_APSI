@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Bengkel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 100px;">
+        <h2>Login Sistem</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="doLogin()">Masuk</button>
+        <p>Belum punya akun? <a href="register.html">Daftar Pelanggan</a></p>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        async function doLogin() {
+            const email = document.getElementById("email").value;
+            const pass = document.getElementById("pass").value;
+            
+            const res = await sendData({ action: "login", email: email, password: pass });
+            if (res.status === "found") {
+                localStorage.setItem("user", JSON.stringify(res.data));
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Login Gagal!");
+            }
+        }
+    </script>
+</body>
+</html>
