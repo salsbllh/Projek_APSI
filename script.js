@@ -21,7 +21,7 @@ async function sendData(data) {
 function checkAuth(allowedRoles = []) {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
-        window.location.href = "login.html";
+        window.location.href = "index.html";
         return null;
     }
     // Jika role user tidak ada di daftar yang diizinkan (kecuali array kosong = semua boleh)
@@ -36,7 +36,7 @@ function checkAuth(allowedRoles = []) {
 // --- LOGOUT ---
 function logout() {
     localStorage.removeItem("user");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
 }
 
 // --- FORMAT RUPIAH ---
